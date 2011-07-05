@@ -16,7 +16,17 @@
  */
 package org.exoplatform.social.client.core.net;
 
+import java.util.Map;
+
+import junit.framework.TestCase;
+
+import org.apache.http.HttpResponse;
 import org.exoplatform.social.client.api.SocialClientContext;
+import org.exoplatform.social.client.api.model.Identity;
+import org.exoplatform.social.client.api.net.SocialHttpClient.POLICY;
+import org.exoplatform.social.client.core.model.IdentityImpl;
+import org.exoplatform.social.client.core.util.SocialHttpClientSupport;
+import org.exoplatform.social.client.core.util.SocialJSONDecodingSupport;
 import org.junit.After;
 import org.junit.Before;
 
@@ -26,7 +36,7 @@ import org.junit.Before;
  *          exo@exoplatform.com
  * Jun 29, 2011  
  */
-public abstract class AbstractClientTest {
+public abstract class AbstractClientTest extends TestCase {
 
   @Before
   public void setUp() {
@@ -68,5 +78,5 @@ public abstract class AbstractClientTest {
     SocialClientContext.setUsername(username);
     SocialClientContext.setPassword(password);
   }
-
+  
 }
