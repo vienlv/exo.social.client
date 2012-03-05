@@ -16,12 +16,6 @@
  */
 package org.exoplatform.social.client.api.model;
 
-import java.io.IOException;
-
-import org.apache.http.HttpResponse;
-import org.exoplatform.social.client.api.net.SocialHttpClient.POLICY;
-import org.exoplatform.social.client.api.service.ServiceException;
-import org.exoplatform.social.client.api.util.SocialHttpClientSupport;
 import org.exoplatform.social.client.api.util.SocialJSONDecodingSupport;
 import org.json.simple.parser.ParseException;
 
@@ -45,8 +39,8 @@ public class RestComment extends Model {
     ID("id"),
     /** the json field for userId. */
     IDENTITY_ID("identityId"),
-    /** the json field for activityId. */
-    ACTIVITY_ID("activityId"),
+    /** the json field for activity. */
+    ACTIVITY("activity"),
      /** the json field for streamTitle. */
     TEXT("text"),
     /** the json field for postedTime. */
@@ -54,7 +48,9 @@ public class RestComment extends Model {
     /** the json field for createdAt. */
     CREATED_AT("createdAt"),
     /** the identity who comment the activity */
-    POSTER_IDENTITY("posterIdentity");
+    POSTER_IDENTITY("posterIdentity"),
+    /** the json field for activity. */
+    ACTIVITY_ID("activityId"),;
 
     /**
      * The json field that the instance represents.
@@ -93,13 +89,28 @@ public class RestComment extends Model {
    *
    * @param id         the comment id
    * @param identityId the identity id
-   * @param activityId the activity id
    * @param postedTime the posted time
+   * @param createdAt
    */
-  public RestComment(String id, String identityId, String activityId, Long postedTime, String createdAt) {
+  public RestComment(String id, String identityId, Long postedTime, String createdAt) {
     setId(id);
     setIdentityId(identityId);
-    setActivityId(activityId);
+    setPostedTime(postedTime);
+    setCreatedAt(createdAt);
+  }
+  
+  /**
+   * Constructor.
+   *
+   * @param id         the comment id
+   * @param identityId the identity id
+   * @param activity the activity
+   * @param postedTime the posted time
+   */
+  public RestComment(String id, String identityId, RestActivity activity, Long postedTime, String createdAt) {
+    setId(id);
+    setIdentityId(identityId);
+    setActivity(activity);
     setPostedTime(postedTime);
     setCreatedAt(createdAt);
   }
@@ -143,21 +154,33 @@ public class RestComment extends Model {
   }
 
   /**
+   * Gets the activity which is associated with this comment.
+   *
+   * @return the activity.
+   */
+  public RestActivity getActivity() {
+    return (RestActivity) getField(Field.ACTIVITY.toString());
+  }
+
+  /**
    * Gets the activity id which is associated with this comment.
    *
    * @return the activity id.
    */
   public String getActivityId() {
-    return getFieldAsString(Field.ACTIVITY_ID.toString());
+    if (this.getActivity() != null) {
+      return this.getActivity().getId();
+    }
+    return null;
   }
-
+  
   /**
    * Sets the activity which is associated with this comment.
    *
-   * @param activityId the activity id
+   * @param activity the activity
    */
-  public void setActivityId(String activityId) {
-    setField(Field.ACTIVITY_ID.toString(), activityId);
+  public void setActivity(RestActivity activity) {
+    setField(Field.ACTIVITY.toString(), activity);
   }
 
   /**
@@ -215,28 +238,6 @@ public class RestComment extends Model {
   }
 
   /**
-   * Gets the activity is associated with this comment.
-   *
-   * This must be lazy loading for better performance.
-   *
-   * @return the activity
-   */
-  public RestActivity getActivity() {
-    RestActivity restActivity = null;
-    try {
-      String BASE_URL = SocialHttpClientSupport.buildCommonRestPathFromContext(true);
-      String requestURL = BASE_URL + "restActivity/" + this.getActivityId() + ".json";
-      HttpResponse response = SocialHttpClientSupport.executeGet(requestURL, POLICY.BASIC_AUTH);
-      restActivity = SocialJSONDecodingSupport.parser(RestActivity.class, response);
-    } catch (IOException e) {
-      throw new ServiceException(RestComment.class, "IOException when reads Json Content.", e);
-    } catch (ParseException e) {
-      throw new ServiceException(RestComment.class, "ParseException when reads Json Content.", e);
-    }
-    return restActivity;
-  }
-
-  /**
    * Gets the identity who commented.
    *
    * This must be lazy loading for better performance.
@@ -245,18 +246,12 @@ public class RestComment extends Model {
    * @deprecated only use with v1-alpha1
    */
   public RestIdentity getIdentity() {
-    RestIdentity restIdentity = null;
+    String posterIdentityJson = getFieldAsString(Field.POSTER_IDENTITY.toString());
     try {
-      String BASE_URL = SocialHttpClientSupport.buildCommonRestPathFromContext(true);
-      String requestURL = BASE_URL + "restIdentity/" + this.getIdentityId() + ".json";
-      HttpResponse response = SocialHttpClientSupport.executeGet(requestURL, POLICY.BASIC_AUTH);
-      restIdentity = SocialJSONDecodingSupport.parser(RestIdentity.class, response);
-    } catch (IOException e) {
-      throw new ServiceException(RestComment.class, "IOException when reads Json Content.", e);
-    } catch (ParseException e) {
-      throw new ServiceException(RestComment.class, "ParseException when reads Json Content.", e);
+      return posterIdentityJson == null ? new RestIdentity() : SocialJSONDecodingSupport.parser(RestIdentity.class, posterIdentityJson);
+    } catch (ParseException pex) {
+      return new RestIdentity();
     }
-    return restIdentity;
   }
   
   /**

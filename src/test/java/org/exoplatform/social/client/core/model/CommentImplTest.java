@@ -16,6 +16,7 @@
  */
 package org.exoplatform.social.client.core.model;
 
+import org.exoplatform.social.client.api.model.RestActivity;
 import org.exoplatform.social.client.api.model.RestComment;
 import org.testng.annotations.Test;
 
@@ -35,14 +36,21 @@ public class CommentImplTest {
   public void shouldCreateInstanceAndGetFields() {
     final String id = "123sdge234";
     final String identityId = "136492yf9wfhw";
-    final String activityId = "12345689abcdefgh";
     final long postedTime = System.currentTimeMillis();
     final String createdAt = "Tue Jun 21 15:09:19 +0700 2011";
-    RestComment restComment = new RestComment(id, identityId, activityId, postedTime, createdAt);
+    RestComment restComment = new RestComment(id, identityId, postedTime, createdAt);
+    
+    RestActivity restActivity = new RestActivity();
+    restActivity.setId("abc92838abdfad28383");
+    restActivity.setTitle("activity to test");
+    restActivity.setBody("body activity");
+    
+    restComment.setActivity(restActivity);
+    
     assertThat("restComment must not be null", restComment, notNullValue());
     assertThat("restComment.getId() must return: " + id, restComment.getId(), equalTo(id));
     assertThat("restComment.getIdentityId() must return: " + identityId, restComment.getIdentityId(), equalTo(identityId));
-    assertThat("restComment.getActivityId() must return: " + activityId, restComment.getActivityId(), equalTo(activityId));
+    assertThat("restComment.getActivityId() must return: " + restActivity.getId(), restComment.getActivityId(), equalTo(restActivity.getId()));
     assertThat("restComment.getPostedTime() must return: " + postedTime, restComment.getPostedTime(), equalTo(postedTime));
     assertThat("restComment.getCreatedAt() must return: " + createdAt, restComment.getCreatedAt(), equalTo(createdAt));
   }
